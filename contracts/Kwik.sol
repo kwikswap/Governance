@@ -3,18 +3,18 @@ pragma experimental ABIEncoderV2;
 
 import "./SafeMath.sol";
 
-contract Kswap {
+contract Kwik {
     /// @notice EIP-20 token name for this token
     string public constant name = "Kwikswap";
 
     /// @notice EIP-20 token symbol for this token
-    string public constant symbol = "KSWAP";
+    string public constant symbol = "KWIK";
 
     /// @notice EIP-20 token decimals for this token
     uint8 public constant decimals = 18;
 
     /// @notice Total number of tokens in circulation
-    uint public totalSupply = 1_000_000_000e18; // 1 billion Kswap
+    uint public totalSupply = 1_000_000_000e18; // 1 billion Kwik
 
     /// @notice Address which may mint new tokens
     address public minter;
@@ -77,13 +77,13 @@ contract Kswap {
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     /**
-     * @notice Construct a new Kswap token
+     * @notice Construct a new Kwik token
      * @param account The initial account to grant all the tokens
      * @param minter_ The account with minting ability
      * @param mintingAllowedAfter_ The timestamp after which minting may occur
      */
     constructor(address account, address minter_, uint mintingAllowedAfter_) public {
-        require(mintingAllowedAfter_ >= block.timestamp, "Kswap::constructor: minting can only begin after deployment");
+        require(mintingAllowedAfter_ >= block.timestamp, "Kwik::constructor: minting can only begin after deployment");
 
         balances[account] = uint96(totalSupply);
         emit Transfer(address(0), account, totalSupply);
@@ -97,7 +97,7 @@ contract Kswap {
      * @param minter_ The address of the new minter
      */
     function setMinter(address minter_) external {
-        require(msg.sender == minter, "Kswap::setMinter: only the minter can change the minter address");
+        require(msg.sender == minter, "Kwik::setMinter: only the minter can change the minter address");
         emit MinterChanged(minter, minter_);
         minter = minter_;
     }
@@ -108,20 +108,20 @@ contract Kswap {
      * @param rawAmount The number of tokens to be minted
      */
     function mint(address dst, uint rawAmount) external {
-        require(msg.sender == minter, "Kswap::mint: only the minter can mint");
-        require(block.timestamp >= mintingAllowedAfter, "Kswap::mint: minting not allowed yet");
-        require(dst != address(0), "Kswap::mint: cannot transfer to the zero address");
+        require(msg.sender == minter, "Kwik::mint: only the minter can mint");
+        require(block.timestamp >= mintingAllowedAfter, "Kwik::mint: minting not allowed yet");
+        require(dst != address(0), "Kwik::mint: cannot transfer to the zero address");
 
         // record the mint
         mintingAllowedAfter = SafeMath.add(block.timestamp, minimumTimeBetweenMints);
 
         // mint the amount
-        uint96 amount = safe96(rawAmount, "Kswap::mint: amount exceeds 96 bits");
-        require(amount <= SafeMath.div(SafeMath.mul(totalSupply, mintCap), 100), "Kswap::mint: exceeded mint cap");
-        totalSupply = safe96(SafeMath.add(totalSupply, amount), "Kswap::mint: totalSupply exceeds 96 bits");
+        uint96 amount = safe96(rawAmount, "Kwik::mint: amount exceeds 96 bits");
+        require(amount <= SafeMath.div(SafeMath.mul(totalSupply, mintCap), 100), "Kwik::mint: exceeded mint cap");
+        totalSupply = safe96(SafeMath.add(totalSupply, amount), "Kwik::mint: totalSupply exceeds 96 bits");
 
         // transfer the amount to the recipient
-        balances[dst] = add96(balances[dst], amount, "Kswap::mint: transfer amount overflows");
+        balances[dst] = add96(balances[dst], amount, "Kwik::mint: transfer amount overflows");
         emit Transfer(address(0), dst, amount);
 
         // move delegates
@@ -151,7 +151,7 @@ contract Kswap {
         if (rawAmount == uint(-1)) {
             amount = uint96(-1);
         } else {
-            amount = safe96(rawAmount, "Kswap::approve: amount exceeds 96 bits");
+            amount = safe96(rawAmount, "Kwik::approve: amount exceeds 96 bits");
         }
 
         allowances[msg.sender][spender] = amount;
@@ -175,16 +175,16 @@ contract Kswap {
         if (rawAmount == uint(-1)) {
             amount = uint96(-1);
         } else {
-            amount = safe96(rawAmount, "Kswap::permit: amount exceeds 96 bits");
+            amount = safe96(rawAmount, "Kwik::permit: amount exceeds 96 bits");
         }
 
         bytes32 domainSeparator = keccak256(abi.encode(DOMAIN_TYPEHASH, keccak256(bytes(name)), getChainId(), address(this)));
         bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, rawAmount, nonces[owner]++, deadline));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
-        require(signatory != address(0), "Kswap::permit: invalid signature");
-        require(signatory == owner, "Kswap::permit: unauthorized");
-        require(now <= deadline, "Kswap::permit: signature expired");
+        require(signatory != address(0), "Kwik::permit: invalid signature");
+        require(signatory == owner, "Kwik::permit: unauthorized");
+        require(now <= deadline, "Kwik::permit: signature expired");
 
         allowances[owner][spender] = amount;
 
@@ -207,7 +207,7 @@ contract Kswap {
      * @return Whether or not the transfer succeeded
      */
     function transfer(address dst, uint rawAmount) external returns (bool) {
-        uint96 amount = safe96(rawAmount, "Kswap::transfer: amount exceeds 96 bits");
+        uint96 amount = safe96(rawAmount, "Kwik::transfer: amount exceeds 96 bits");
         _transferTokens(msg.sender, dst, amount);
         return true;
     }
@@ -222,10 +222,10 @@ contract Kswap {
     function transferFrom(address src, address dst, uint rawAmount) external returns (bool) {
         address spender = msg.sender;
         uint96 spenderAllowance = allowances[src][spender];
-        uint96 amount = safe96(rawAmount, "Kswap::approve: amount exceeds 96 bits");
+        uint96 amount = safe96(rawAmount, "Kwik::approve: amount exceeds 96 bits");
 
         if (spender != src && spenderAllowance != uint96(-1)) {
-            uint96 newAllowance = sub96(spenderAllowance, amount, "Kswap::transferFrom: transfer amount exceeds spender allowance");
+            uint96 newAllowance = sub96(spenderAllowance, amount, "Kwik::transferFrom: transfer amount exceeds spender allowance");
             allowances[src][spender] = newAllowance;
 
             emit Approval(src, spender, newAllowance);
@@ -257,9 +257,9 @@ contract Kswap {
         bytes32 structHash = keccak256(abi.encode(DELEGATION_TYPEHASH, delegatee, nonce, expiry));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
         address signatory = ecrecover(digest, v, r, s);
-        require(signatory != address(0), "Kswap::delegateBySig: invalid signature");
-        require(nonce == nonces[signatory]++, "Kswap::delegateBySig: invalid nonce");
-        require(now <= expiry, "Kswap::delegateBySig: signature expired");
+        require(signatory != address(0), "Kwik::delegateBySig: invalid signature");
+        require(nonce == nonces[signatory]++, "Kwik::delegateBySig: invalid nonce");
+        require(now <= expiry, "Kwik::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
 
@@ -281,7 +281,7 @@ contract Kswap {
      * @return The number of votes the account had as of the given block
      */
     function getPriorVotes(address account, uint blockNumber) public view returns (uint96) {
-        require(blockNumber < block.number, "Kswap::getPriorVotes: not yet determined");
+        require(blockNumber < block.number, "Kwik::getPriorVotes: not yet determined");
 
         uint32 nCheckpoints = numCheckpoints[account];
         if (nCheckpoints == 0) {
@@ -325,11 +325,11 @@ contract Kswap {
     }
 
     function _transferTokens(address src, address dst, uint96 amount) internal {
-        require(src != address(0), "Kswap::_transferTokens: cannot transfer from the zero address");
-        require(dst != address(0), "Kswap::_transferTokens: cannot transfer to the zero address");
+        require(src != address(0), "Kwik::_transferTokens: cannot transfer from the zero address");
+        require(dst != address(0), "Kwik::_transferTokens: cannot transfer to the zero address");
 
-        balances[src] = sub96(balances[src], amount, "Kswap::_transferTokens: transfer amount exceeds balance");
-        balances[dst] = add96(balances[dst], amount, "Kswap::_transferTokens: transfer amount overflows");
+        balances[src] = sub96(balances[src], amount, "Kwik::_transferTokens: transfer amount exceeds balance");
+        balances[dst] = add96(balances[dst], amount, "Kwik::_transferTokens: transfer amount overflows");
         emit Transfer(src, dst, amount);
 
         _moveDelegates(delegates[src], delegates[dst], amount);
@@ -340,21 +340,21 @@ contract Kswap {
             if (srcRep != address(0)) {
                 uint32 srcRepNum = numCheckpoints[srcRep];
                 uint96 srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
-                uint96 srcRepNew = sub96(srcRepOld, amount, "Kswap::_moveVotes: vote amount underflows");
+                uint96 srcRepNew = sub96(srcRepOld, amount, "Kwik::_moveVotes: vote amount underflows");
                 _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
             }
 
             if (dstRep != address(0)) {
                 uint32 dstRepNum = numCheckpoints[dstRep];
                 uint96 dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
-                uint96 dstRepNew = add96(dstRepOld, amount, "Kswap::_moveVotes: vote amount overflows");
+                uint96 dstRepNew = add96(dstRepOld, amount, "Kwik::_moveVotes: vote amount overflows");
                 _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
             }
         }
     }
 
     function _writeCheckpoint(address delegatee, uint32 nCheckpoints, uint96 oldVotes, uint96 newVotes) internal {
-      uint32 blockNumber = safe32(block.number, "Kswap::_writeCheckpoint: block number exceeds 32 bits");
+      uint32 blockNumber = safe32(block.number, "Kwik::_writeCheckpoint: block number exceeds 32 bits");
 
       if (nCheckpoints > 0 && checkpoints[delegatee][nCheckpoints - 1].fromBlock == blockNumber) {
           checkpoints[delegatee][nCheckpoints - 1].votes = newVotes;

@@ -2,11 +2,11 @@ import chai, { expect } from 'chai'
 import { Contract, constants } from 'ethers'
 import { solidity, MockProvider, createFixtureLoader, deployContract } from 'ethereum-waffle'
 
-import KwikswapV2Factory from '@kwikswap/v2-core/build/KwikswapV2Factory.json'
-import KwikswapV2Pair from '@kwikswap/v2-core/build/KwikswapV2Pair.json'
+import KwikswapV1Factory from '@kwikswap/v1-core/build/KwikswapV1Factory.json'
+import KwikswapV1Pair from '@kwikswap/v1-core/build/KwikswapV1Pair.json'
 import FeeToSetter from '../../build/FeeToSetter.json'
 import FeeTo from '../../build/FeeTo.json'
-import Kswap from '../../build/Kswap.json'
+import Kwik from '../../build/Kwik.json'
 
 import { governanceFixture } from '../fixtures'
 import { mineBlock, expandTo18Decimals } from '../utils'
@@ -29,8 +29,8 @@ describe('scenario:FeeTo', () => {
   })
 
   let factory: Contract
-  beforeEach('deploy kwikswap v2', async () => {
-    factory = await deployContract(wallet, KwikswapV2Factory, [wallet.address])
+  beforeEach('deploy kwikswap v1', async () => {
+    factory = await deployContract(wallet, KwikswapV1Factory, [wallet.address])
   })
 
   let feeToSetter: Contract
@@ -70,9 +70,9 @@ describe('scenario:FeeTo', () => {
     const tokens: Contract[] = []
     beforeEach('make test tokens', async () => {
       const { timestamp: now } = await provider.getBlock('latest')
-      const token0 = await deployContract(wallet, Kswap, [wallet.address, constants.AddressZero, now + 60 * 60])
+      const token0 = await deployContract(wallet, Kwik, [wallet.address, constants.AddressZero, now + 60 * 60])
       tokens.push(token0)
-      const token1 = await deployContract(wallet, Kswap, [wallet.address, constants.AddressZero, now + 60 * 60])
+      const token1 = await deployContract(wallet, Kwik, [wallet.address, constants.AddressZero, now + 60 * 60])
       tokens.push(token1)
     })
 
@@ -84,7 +84,7 @@ describe('scenario:FeeTo', () => {
       // create the pair
       await factory.createPair(tokens[0].address, tokens[1].address)
       const pairAddress = await factory.getPair(tokens[0].address, tokens[1].address)
-      pair = new Contract(pairAddress, KwikswapV2Pair.abi).connect(wallet)
+      pair = new Contract(pairAddress, KwikswapV1Pair.abi).connect(wallet)
 
       // add liquidity
       await tokens[0].transfer(pair.address, expandTo18Decimals(1))

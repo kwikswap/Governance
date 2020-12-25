@@ -2,7 +2,7 @@ import chai, { expect } from 'chai'
 import { Contract, constants } from 'ethers'
 import { solidity, MockProvider, createFixtureLoader, deployContract } from 'ethereum-waffle'
 
-import KwikswapV2Factory from '@kwikswap/v2-core/build/KwikswapV2Factory.json'
+import KwikswapV1Factory from '@kwikswap/v1-core/build/KwikswapV1Factory.json'
 import FeeToSetter from '../../build/FeeToSetter.json'
 
 import { governanceFixture } from '../fixtures'
@@ -26,8 +26,8 @@ describe('scenario:FeeToSetter', () => {
   })
 
   let factory: Contract
-  beforeEach('deploy kwikswap v2', async () => {
-    factory = await deployContract(wallet, KwikswapV2Factory, [wallet.address])
+  beforeEach('deploy kwikswap v1', async () => {
+    factory = await deployContract(wallet, KwikswapV1Factory, [wallet.address])
   })
 
   let feeToSetter: Contract

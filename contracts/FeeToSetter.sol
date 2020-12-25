@@ -27,18 +27,18 @@ contract FeeToSetter {
     function setFeeToSetter(address feeToSetter_) public {
         require(block.timestamp >= vestingEnd, 'FeeToSetter::setFeeToSetter: not time yet');
         require(msg.sender == owner, 'FeeToSetter::setFeeToSetter: not allowed');
-        IKwikswapV2Factory(factory).setFeeToSetter(feeToSetter_);
+        IKwikswapV1Factory(factory).setFeeToSetter(feeToSetter_);
     }
 
     // allows owner to turn fees on/off after vesting
     function toggleFees(bool on) public {
         require(block.timestamp >= vestingEnd, 'FeeToSetter::toggleFees: not time yet');
         require(msg.sender == owner, 'FeeToSetter::toggleFees: not allowed');
-        IKwikswapV2Factory(factory).setFeeTo(on ? feeTo : address(0));
+        IKwikswapV1Factory(factory).setFeeTo(on ? feeTo : address(0));
     }
 }
 
-interface IKwikswapV2Factory {
+interface IKwikswapV1Factory {
     function setFeeToSetter(address) external;
     function setFeeTo(address) external;
 }

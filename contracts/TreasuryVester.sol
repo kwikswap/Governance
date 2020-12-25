@@ -5,7 +5,7 @@ import "./SafeMath.sol";
 contract TreasuryVester {
     using SafeMath for uint;
 
-    address public kswap;
+    address public kwik;
     address public recipient;
 
     uint public vestingAmount;
@@ -16,7 +16,7 @@ contract TreasuryVester {
     uint public lastUpdate;
 
     constructor(
-        address kswap_,
+        address kwik_,
         address recipient_,
         uint vestingAmount_,
         uint vestingBegin_,
@@ -27,7 +27,7 @@ contract TreasuryVester {
         require(vestingCliff_ >= vestingBegin_, 'TreasuryVester::constructor: cliff is too early');
         require(vestingEnd_ > vestingCliff_, 'TreasuryVester::constructor: end is too early');
 
-        kswap = kswap_;
+        kwik = kwik_;
         recipient = recipient_;
 
         vestingAmount = vestingAmount_;
@@ -47,16 +47,16 @@ contract TreasuryVester {
         require(block.timestamp >= vestingCliff, 'TreasuryVester::claim: not time yet');
         uint amount;
         if (block.timestamp >= vestingEnd) {
-            amount = IKswap(kswap).balanceOf(address(this));
+            amount = IKwik(kwik).balanceOf(address(this));
         } else {
             amount = vestingAmount.mul(block.timestamp - lastUpdate).div(vestingEnd - vestingBegin);
             lastUpdate = block.timestamp;
         }
-        IKswap(kswap).transfer(recipient, amount);
+        IKwik(kwik).transfer(recipient, amount);
     }
 }
 
-interface IKswap {
+interface IKwik {
     function balanceOf(address account) external view returns (uint);
     function transfer(address dst, uint rawAmount) external returns (bool);
 }

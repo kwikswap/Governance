@@ -2,7 +2,7 @@ import chai, { expect } from 'chai'
 import { Contract, Wallet, providers } from 'ethers'
 import { solidity, deployContract } from 'ethereum-waffle'
 
-import Kswap from '../build/Kswap.json'
+import Kwik from '../build/Kwik.json'
 import Timelock from '../build/Timelock.json'
 import GovernorAlpha from '../build/GovernorAlpha.json'
 
@@ -11,7 +11,7 @@ import { DELAY } from './utils'
 chai.use(solidity)
 
 interface GovernanceFixture {
-  kswap: Contract
+  kwik: Contract
   timelock: Contract
   governorAlpha: Contract
 }
@@ -23,7 +23,7 @@ export async function governanceFixture(
   // deploy UNI, sending the total supply to the deployer
   const { timestamp: now } = await provider.getBlock('latest')
   const timelockAddress = Contract.getContractAddress({ from: wallet.address, nonce: 1 })
-  const kswap = await deployContract(wallet, Kswap, [wallet.address, timelockAddress, now + 60 * 60])
+  const kwik = await deployContract(wallet, Kwik, [wallet.address, timelockAddress, now + 60 * 60])
 
   // deploy timelock, controlled by what will be the governor
   const governorAlphaAddress = Contract.getContractAddress({ from: wallet.address, nonce: 2 })
@@ -31,8 +31,8 @@ export async function governanceFixture(
   expect(timelock.address).to.be.eq(timelockAddress)
 
   // deploy governorAlpha
-  const governorAlpha = await deployContract(wallet, GovernorAlpha, [timelock.address, kswap.address])
+  const governorAlpha = await deployContract(wallet, GovernorAlpha, [timelock.address, kwik.address])
   expect(governorAlpha.address).to.be.eq(governorAlphaAddress)
 
-  return { kswap, timelock, governorAlpha }
+  return { kwik, timelock, governorAlpha }
 }

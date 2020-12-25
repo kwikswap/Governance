@@ -18,19 +18,19 @@ describe('GovernorAlpha', () => {
   const [wallet] = provider.getWallets()
   const loadFixture = createFixtureLoader([wallet], provider)
 
-  let kswap: Contract
+  let kwik: Contract
   let timelock: Contract
   let governorAlpha: Contract
   beforeEach(async () => {
     const fixture = await loadFixture(governanceFixture)
-    kswap = fixture.kswap
+    kwik = fixture.kwik
     timelock = fixture.timelock
     governorAlpha = fixture.governorAlpha
   })
 
-  it('kswap', async () => {
-    const balance = await kswap.balanceOf(wallet.address)
-    const totalSupply = await kswap.totalSupply()
+  it('kwik', async () => {
+    const balance = await kwik.balanceOf(wallet.address)
+    const totalSupply = await kwik.totalSupply()
     expect(balance).to.be.eq(totalSupply)
   })
 
@@ -48,7 +48,7 @@ describe('GovernorAlpha', () => {
     expect(votingPeriod).to.be.eq(40320)
     const timelockAddress = await governorAlpha.timelock()
     expect(timelockAddress).to.be.eq(timelock.address)
-    const kswapFromGovernor = await governorAlpha.kswap()
-    expect(kswapFromGovernor).to.be.eq(kswap.address)
+    const kwikFromGovernor = await governorAlpha.kwik()
+    expect(kwikFromGovernor).to.be.eq(kwik.address)
   })
 })
